@@ -177,6 +177,24 @@ func (r *Request) GetBody(ctx context.Context) ([]byte, error) {
 	return io.ReadAll(res.Body)
 }
 
+func (r *Request) GetBodyStatus(ctx context.Context) (int, string, error) {
+	res, err := r.DoRes(ctx)
+
+	if res == nil {
+		return 0, "", err
+	}
+
+	if res.Body == nil {
+		return res.StatusCode, "", err
+	}
+
+	defer res.Body.Close()
+
+	b, err1 := io.ReadAll(res.Body)
+
+	return res.StatusCode, string(b), err1
+}
+
 func (r *Request) GetJSON(ctx context.Context, obj any) error {
 	b, err := r.Do(ctx)
 

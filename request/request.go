@@ -69,6 +69,16 @@ func (r *Request) Headers(headers map[string]string) *Request {
 	return r
 }
 
+func (r *Request) AddHeader(k, v string) *Request {
+	if r.headers == nil {
+		r.headers = make(map[string]string)
+	}
+
+	r.headers[k] = v
+
+	return r
+}
+
 func (r *Request) Args(args map[string]string) *Request {
 	r.args = args
 
@@ -143,6 +153,22 @@ func (r *Request) Do(ctx context.Context) (io.ReadCloser, error) {
 	}
 
 	return res.Body, nil
+}
+
+func (r *Request) GetBody(ctx context.Context) ([]byte, error) {
+	res, err := r.DoRes(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if res.Body == nil {
+		return nil, fmt.Errorf("null body")
+	}
+
+	defer res.Body.Close()
+
+	return io.ReadAll(res.Body)
 }
 
 func (r *Request) GetJSON(ctx context.Context, obj any) error {

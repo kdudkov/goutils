@@ -38,6 +38,12 @@ func (r *Request) URL(url string) *Request {
 	return r
 }
 
+func (r *Request) Method(method string) *Request {
+	r.method = method
+
+	return r
+}
+
 func (r *Request) Put() *Request {
 	r.method = "PUT"
 

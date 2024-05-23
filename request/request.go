@@ -23,7 +23,13 @@ type Request struct {
 }
 
 func New(c *http.Client, logger *slog.Logger) *Request {
-	return &Request{client: c, method: "GET", logger: logger}
+	l := logger
+
+	if l == nil {
+		l = slog.Default()
+	}
+
+	return &Request{client: c, method: "GET", logger: l}
 }
 
 func (r *Request) URL(url string) *Request {
@@ -109,24 +115,18 @@ func (r *Request) DoRes(ctx context.Context) (*http.Response, error) {
 
 	res, err := r.client.Do(req)
 	if err != nil {
-		if r.logger != nil {
-			r.logger.Info(fmt.Sprintf("%s %s - error %s", r.method, req.URL, err.Error()))
-		}
+		r.logger.Info(fmt.Sprintf("%s %s - error %s", r.method, req.URL, err.Error()))
 
 		return res, err
 	}
 
 	if res.StatusCode < 200 || res.StatusCode > 299 {
-		if r.logger != nil {
-			r.logger.Warn(fmt.Sprintf("%s %s - %d", r.method, req.URL, res.StatusCode))
-		}
+		r.logger.Warn(fmt.Sprintf("%s %s - %d", r.method, req.URL, res.StatusCode))
 
 		return res, fmt.Errorf("status is %s", res.Status)
 	}
 
-	if r.logger != nil {
-		r.logger.Debug(fmt.Sprintf("%s %s - %d", r.method, req.URL, res.StatusCode))
-	}
+	r.logger.Debug(fmt.Sprintf("%s %s - %d", r.method, req.URL, res.StatusCode))
 
 	return res, nil
 }

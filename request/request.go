@@ -147,7 +147,7 @@ func (r *Request) DoRes(ctx context.Context) (*http.Response, error) {
 		return res, err
 	}
 
-	if res.StatusCode < 200 || res.StatusCode > 299 {
+	if res.StatusCode > 399 {
 		r.logger.Warn(fmt.Sprintf("%s %s - %d", r.method, req.URL, res.StatusCode))
 
 		return res, fmt.Errorf("status is %s", res.Status)

@@ -19,6 +19,7 @@ type Request struct {
 	body    io.Reader
 	headers map[string]string
 	args    map[string]string
+	cookies []*http.Cookie
 	logger  *slog.Logger
 }
 
@@ -85,6 +86,12 @@ func (r *Request) AddHeader(k, v string) *Request {
 	return r
 }
 
+func (r *Request) AddCookie(c *http.Cookie) *Request {
+	r.cookies = append(r.cookies, c)
+
+	return r
+}
+
 func (r *Request) Args(args map[string]string) *Request {
 	r.args = args
 
@@ -127,6 +134,10 @@ func (r *Request) DoRes(ctx context.Context) (*http.Response, error) {
 		}
 
 		req.URL.RawQuery = q.Encode()
+	}
+
+	for _, c := range r.cookies {
+		req.AddCookie(c)
 	}
 
 	res, err := r.client.Do(req)

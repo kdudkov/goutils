@@ -30,8 +30,11 @@ func (p *Callback[V]) AddMessage(msg V) {
 	})
 }
 
-func (p *Callback[V]) Subscribe(fn func(msg V) bool) {
-	p.callbacks.Store(uuid.NewString(), fn)
+func (p *Callback[V]) Subscribe(fn func(msg V) bool) string {
+	uid := uuid.NewString()
+	p.callbacks.Store(uid, fn)
+
+	return uid
 }
 
 func (p *Callback[V]) SubscribeNamed(name string, fn func(msg V) bool) {

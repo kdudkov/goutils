@@ -3,11 +3,25 @@ package request
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
 )
+
+type Error struct {
+	Code int
+	Message string
+}
+
+func (e *Error) Error() string {
+	return e.Message
+}
+
+func NewError(code int, msg string) *Error {
+	return &Error{Code: code, Message: msg}
+}
 
 type Request struct {
 	client  *http.Client
@@ -150,7 +164,7 @@ func (r *Request) DoRes(ctx context.Context) (*http.Response, error) {
 	if res.StatusCode > 399 {
 		r.logger.Warn(fmt.Sprintf("%s %s - %d", r.method, req.URL, res.StatusCode))
 
-		return res, fmt.Errorf("status is %s", res.Status)
+		return res, NewError(res.StatusCode, res.Status)
 	}
 
 	r.logger.Debug(fmt.Sprintf("%s %s - %d", r.method, req.URL, res.StatusCode))
@@ -210,6 +224,12 @@ func (r *Request) GetJSON(ctx context.Context, obj any) error {
 	b, err := r.Do(ctx)
 
 	if err != nil {
+		e1 := new(Error)
+		
+		if errors.Is(err, e1) && e1.Code == 404 {
+			return nil
+		}
+		
 		return err
 	}
 

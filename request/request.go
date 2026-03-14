@@ -1,6 +1,7 @@
 package request
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -115,6 +116,15 @@ func (r *Request) Args(args map[string]string) *Request {
 func (r *Request) Body(body io.Reader) *Request {
 	r.body = body
 
+	return r
+}
+
+func (r *Request) JSONBody(a any) *Request {
+	b, _ := json.Marshal(a)
+	
+	r.body = bytes.NewReader(b)
+	r.AddHeader("Content-Type", "application/json")
+	
 	return r
 }
 

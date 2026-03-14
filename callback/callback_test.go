@@ -7,15 +7,15 @@ import (
 	"testing"
 	"time"
 
-	"golang.org/x/exp/rand"
+	"math/rand/v2"
 )
 
 func TestRemove(t *testing.T) {
 	cb := New[string]()
 
-	for i := 0; i < 30; i++ {
-		cb.Add(func(msg string) bool {
-			if rand.Intn(1000) == 1 {
+	for range 30 {
+		cb.Subscribe(func(msg string) bool {
+			if rand.IntN(1000) == 1 {
 				fmt.Printf("remove\n")
 				return false
 			}
@@ -30,18 +30,16 @@ func TestRemove(t *testing.T) {
 
 	wg := new(sync.WaitGroup)
 
-	for i := 0; i < n; i++ {
-		wg.Add(1)
+	for range n {
 
-		go func() {
+		wg.Go(func() {
 			for ctx.Err() == nil {
 				cb.AddMessage("aaa")
 
-				time.Sleep(time.Millisecond * time.Duration(rand.Intn(100)))
+				time.Sleep(time.Millisecond * time.Duration(rand.IntN(100)))
 			}
 
-			wg.Done()
-		}()
+		})
 	}
 
 	time.Sleep(time.Second * 5)
